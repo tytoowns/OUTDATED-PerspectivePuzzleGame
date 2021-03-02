@@ -35,6 +35,8 @@ public class DecalController : MonoBehaviour
     [SerializeField] private float TeleportPostProVolumeFadeInTime = .5f;
     [SerializeField] private float TeleportPostProVolumeFadeOutTime = .25f;
 
+    [SerializeField] private ArmController armController;
+
     float xRotation = 0f;
     float yRotation = 0f;
 
@@ -186,11 +188,15 @@ public class DecalController : MonoBehaviour
     public void SetDecalOn(bool decalOn)
     {
         if (decalOn)
-        {
-            decalMaterial.SetColor("_EmissiveColor", decalDefaultColor);
+        {     
+            //reset rotation and position and color
+            decalParent.transform.localRotation = new Quaternion(0, 0, 0, 0);
             decalParent.transform.localPosition = new Vector3(0, 0, 0);
+            decalMaterial.SetColor("_EmissiveColor", decalDefaultColor);
+
             if (IsDecalFullyOnObject()) //check if the decal will be completly on 2dable surface
             {
+                armController.ChangeArmState(false);
                 characterController.enabled = false; //reEnable the chacterController
                 hDRPOutline.width.value = 1; //turn on the outline
                 isDecalOn = true; //turn the decal on
@@ -204,6 +210,7 @@ public class DecalController : MonoBehaviour
         }
         else
         {
+            armController.ChangeArmState(true);
             //DOTween.To(() => hDRPOutline.width.value, xx => hDRPOutline.width.value = xx, 0, 1);
             hDRPOutline.width.value = 0; //turn off outline
             if (!isTeleporting) //if the player is not teleporting, turn on the crosshair, else the teleporting animation will fade it back in after once complete
@@ -225,12 +232,12 @@ public class DecalController : MonoBehaviour
     private bool IsDecalFullyOnObject()
     {
         // reset rotation (cam is parent to decal parent so will face same way we are looking)
-        decalParent.transform.localRotation = new Quaternion(0, 0, 0, 0);
-        
-        Vector3 leftTop = decalParent.transform.position + transform.right * -(decalDefaultSize.x / 1.5f) + transform.up * (decalDefaultSize.y  / 1.5f);  //1   y - n odd
-        Vector3 leftBot = decalParent.transform.position + transform.right * -(decalDefaultSize.x / 1.5f) + transform.up * -(decalDefaultSize.y / 1.5f); //2   y - y even
-        Vector3 rightTop = decalParent.transform.position + transform.right * (decalDefaultSize.x / 1.5f) + transform.up * (decalDefaultSize.y  / 1.5f); //3   n - n odd
-        Vector3 rightBot = decalParent.transform.position + transform.right * (decalDefaultSize.x / 1.5f) + transform.up * -(decalDefaultSize.y / 1.5f);//4   n - y even
+        //decalParent.transform.localRotation = new Quaternion(0, 0, 0, 0);
+
+        Vector3 leftTop = mainCam.transform.position + transform.right * -(decalDefaultSize.x / 1.5f) + transform.up * (decalDefaultSize.y  / 1.5f);  //1   y - n odd
+        Vector3 leftBot = mainCam.transform.position + transform.right * -(decalDefaultSize.x / 1.5f) + transform.up * -(decalDefaultSize.y / 1.5f); //2   y - y even
+        Vector3 rightTop = mainCam.transform.position + transform.right * (decalDefaultSize.x / 1.5f) + transform.up * (decalDefaultSize.y  / 1.5f); //3   n - n odd
+        Vector3 rightBot = mainCam.transform.position + transform.right * (decalDefaultSize.x / 1.5f) + transform.up * -(decalDefaultSize.y / 1.5f);//4   n - y even
         Vector3 CamForward = mainCam.transform.TransformDirection(Vector3.forward);
 
         RaycastHit[] hits = new RaycastHit[4];
