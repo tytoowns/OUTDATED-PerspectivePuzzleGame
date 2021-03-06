@@ -10,10 +10,21 @@ public class ArmController : MonoBehaviour
     [SerializeField] private Animator animator;
     [SerializeField] private GameObject playerArm;
     [SerializeField] private GameObject decalParent;
-    private bool armWasUp;
-    
+    [SerializeField] private float MaxVerticalRot = 5f;
+    [SerializeField] private float MinVerticalRot = 5f;
+    [SerializeField] private float MaxHorizontalRot = 5f;
+    [SerializeField] private float MinHorizontalRot = 5f;
 
-    // Update is called once per frame
+    private bool armWasUp;
+    private Vector3 defaultRotation;
+    private Vector3 startingRotation;
+
+    private void OnEnable()
+    {
+        //set default rotation
+        defaultRotation = new Vector3 (playerArm.transform.localEulerAngles.x, playerArm.transform.localEulerAngles.y, playerArm.transform.localEulerAngles.z);
+    }
+
     void Update()
     {
         if (armWasUp)
@@ -22,18 +33,37 @@ public class ArmController : MonoBehaviour
 
     private void ResetRotation()
     {
-        //playerArm.transform.rotation = Quaternion.Euler(0, 0, 0);
-        //lerp to rotation
-        //playerArm.transform.DORotate(decalParent.transform.rotation.eulerAngles, 1);
-        //Vector3 resetPoint = new Vector3(Camera.main.transform.eulerAngles.z, Camera.main.transform.eulerAngles.y - 90, -Camera.main.transform.eulerAngles.x);
-        playerArm.transform.DOLocalRotate(new Vector3(0.087f, 3.187f, -7.428f), .25f, RotateMode.Fast);
-
+        playerArm.transform.DOLocalRotate(defaultRotation, .25f, RotateMode.Fast);
     }
 
     private void CopyRotation()
     {
-        // to do - limit rotation
-        playerArm.transform.rotation = Quaternion.Euler(decalParent.transform.eulerAngles.z, decalParent.transform.eulerAngles.y - 90, -decalParent.transform.eulerAngles.x);
+        //get current rot
+        Vector3 currentRotation = decalParent.transform.eulerAngles;
+
+        if(CheckIfCanRotate(currentRotation))
+        {
+            playerArm.transform.rotation = Quaternion.Euler(currentRotation.z, currentRotation.y - 90, -currentRotation.x);
+        }
+    }
+
+    bool CheckIfCanRotate(Vector3 currentRot)
+    {
+        //compare difference to starting Rot
+        Vector3 difference = new Vector3(Mathf.DeltaAngle(currentRot.x, startingRotation.x), Mathf.DeltaAngle(currentRot.y, startingRotation.y), Mathf.DeltaAngle(currentRot.z, startingRotation.z));
+
+        print("CurrentRot " + currentRot);
+        print("StartingRot " + startingRotation);
+        print("Difference " + difference);
+
+        if (difference.x < MaxVerticalRot && difference.x > MinVerticalRot)//if the difference is less than the Max
+        {
+            if (difference.y < MaxHorizontalRot && difference.y > MinHorizontalRot)//and if the differnce is bigger than the Min
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void ChangeArmState(bool armDown)
@@ -47,6 +77,7 @@ public class ArmController : MonoBehaviour
         }   
         else
         {
+            startingRotation = new Vector3(decalParent.transform.eulerAngles.x, decalParent.transform.eulerAngles.y, decalParent.transform.eulerAngles.z);
             armWasUp = true;
             animator.SetTrigger("GoUp");
         }
