@@ -196,7 +196,7 @@ public class DecalController : MonoBehaviour
 
             if (IsDecalFullyOnObject()) //check if the decal will be completly on 2dable surface
             {
-                armController.ChangeArmState(false);
+                armController.ChangeArmState(ArmController.ArmState.up);
                 characterController.enabled = false; //reEnable the chacterController
                 hDRPOutline.width.value = 1; //turn on the outline
                 isDecalOn = true; //turn the decal on
@@ -210,7 +210,7 @@ public class DecalController : MonoBehaviour
         }
         else
         {
-            armController.ChangeArmState(true);
+            armController.ChangeArmState(ArmController.ArmState.down);
             //DOTween.To(() => hDRPOutline.width.value, xx => hDRPOutline.width.value = xx, 0, 1);
             hDRPOutline.width.value = 0; //turn off outline
             if (!isTeleporting) //if the player is not teleporting, turn on the crosshair, else the teleporting animation will fade it back in after once complete

@@ -10,24 +10,28 @@ public class ArmController : MonoBehaviour
     [SerializeField] private Animator animator;
     [SerializeField] private GameObject playerArm;
     [SerializeField] private GameObject decalParent;
-    [SerializeField] private float MaxVerticalRot = 5f;
-    [SerializeField] private float MinVerticalRot = 5f;
-    [SerializeField] private float MaxHorizontalRot = 5f;
-    [SerializeField] private float MinHorizontalRot = 5f;
+    [SerializeField] private float maxVerticalRot = 5f;
+    [SerializeField] private float minVerticalRot = 5f;
+    [SerializeField] private float maxHorizontalRot = 5f;
+    [SerializeField] private float minHorizontalRot = 5f;
+    [SerializeField] private float movementRatio = .5f;
 
-    private bool armWasUp;
     private Vector3 defaultRotation;
     private Vector3 startingRotation;
 
+    public enum ArmState {up, down};
+    private ArmState armState;
+
     private void OnEnable()
     {
+        armState = ArmState.down;
         //set default rotation
         defaultRotation = new Vector3 (playerArm.transform.localEulerAngles.x, playerArm.transform.localEulerAngles.y, playerArm.transform.localEulerAngles.z);
     }
 
     void Update()
     {
-        if (armWasUp)
+        if (armState == ArmState.up)
             CopyRotation();
     }
 
@@ -41,10 +45,33 @@ public class ArmController : MonoBehaviour
         //get current rot
         Vector3 currentRotation = decalParent.transform.eulerAngles;
 
+        Vector3 xRotCheck = currentRotation, yRotCheck = currentRotation;
+        xRotCheck.y = startingRotation.y;
+        yRotCheck.x = startingRotation.x;
+        
         if(CheckIfCanRotate(currentRotation))
         {
-            playerArm.transform.rotation = Quaternion.Euler(currentRotation.z, currentRotation.y - 90, -currentRotation.x);
+            //playerArm.transform.rotation = Quaternion.Euler(currentRotation.z, currentRotation.y - 90, -currentRotation.x);
+            Vector3 forwardVector = -decalParent.transform.right;
+            playerArm.transform.rotation = Quaternion.LookRotation(forwardVector, decalParent.transform.up);
         }
+        /*
+        if(CheckIfCanRotate(xRotCheck))
+        {
+            Vector3 forwardVector = -decalParent.transform.right;
+            forwardVector.y = startingRotation.x;
+            playerArm.transform.localRotation = Quaternion.LookRotation(forwardVector, decalParent.transform.up);
+            //playerArm.transform.rotation = Quaternion.LookRotation(forwardVector, decalParent.transform.up);
+        }
+        if(CheckIfCanRotate(yRotCheck))
+        {
+            //Vector3 forwardVector = -decalParent.transform.right;
+            //forwardVector.x = startingRotation.x;
+            //playerArm.transform.localRotation = Quaternion.LookRotation(forwardVector, decalParent.transform.up);
+
+            //playerArm.transform.rotation = Quaternion.LookRotation(forwardVector, decalParent.transform.up);
+        }
+        */
     }
 
     bool CheckIfCanRotate(Vector3 currentRot)
@@ -52,13 +79,9 @@ public class ArmController : MonoBehaviour
         //compare difference to starting Rot
         Vector3 difference = new Vector3(Mathf.DeltaAngle(currentRot.x, startingRotation.x), Mathf.DeltaAngle(currentRot.y, startingRotation.y), Mathf.DeltaAngle(currentRot.z, startingRotation.z));
 
-        print("CurrentRot " + currentRot);
-        print("StartingRot " + startingRotation);
-        print("Difference " + difference);
-
-        if (difference.x < MaxVerticalRot && difference.x > MinVerticalRot)//if the difference is less than the Max
+        if (difference.x < maxVerticalRot && difference.x > minVerticalRot)//if the difference is less than the Max
         {
-            if (difference.y < MaxHorizontalRot && difference.y > MinHorizontalRot)//and if the differnce is bigger than the Min
+            if (difference.y < maxHorizontalRot && difference.y > minHorizontalRot)//and if the differnce is bigger than the Min
             {
                 return true;
             }
@@ -66,20 +89,19 @@ public class ArmController : MonoBehaviour
         return false;
     }
 
-    public void ChangeArmState(bool armDown)
+    public void ChangeArmState(ArmState newState)
     {
-        if(armDown)
+        if(newState == ArmState.down)
         {
-            if(armWasUp)
-            animator.SetTrigger("GoRest");
-            armWasUp = false;
+            if(armState == ArmState.up)
+                animator.SetTrigger("GoRest");
             ResetRotation();
         }   
         else
         {
             startingRotation = new Vector3(decalParent.transform.eulerAngles.x, decalParent.transform.eulerAngles.y, decalParent.transform.eulerAngles.z);
-            armWasUp = true;
             animator.SetTrigger("GoUp");
         }
+        armState = newState;
     }
 }
