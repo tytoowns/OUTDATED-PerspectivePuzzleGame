@@ -33,13 +33,20 @@ public class moveableObject : MonoBehaviour, IInteractable
     {
         if (isBeingMoved)
         {
-            parentObject.GetComponent<Rigidbody>().velocity = (player.transform.forward * Input.GetAxisRaw("Vertical")).normalized * 1.5f;
+            if(player.GetComponent<CharacterController>().enabled == true)
+            {
+                parentObject.GetComponent<Rigidbody>().velocity = (player.transform.forward * Input.GetAxisRaw("Vertical")).normalized * 1.25f;
+            }
             //parentobject.getcomponent<rigidbody>().velocity = player.GetComponent<CharController>().GetVel();
             //parentObject.GetComponent<Rigidbody>().AddForce(player.GetComponent<CharController>().GetVel(), ForceMode.VelocityChange);
         }
         else
         {
-           // parentObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
+            if(parentObject.GetComponent<Rigidbody>().useGravity == true)//make shift bool to check if other sides are being moved
+            {
+                parentObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
+
+            }
         }
     }
     /* 
@@ -57,17 +64,19 @@ public class moveableObject : MonoBehaviour, IInteractable
 
     public void Interact()
     {
+        Debug.Log("interact..... NOW");
         isBeingMoved = !isBeingMoved;
         if (isBeingMoved)
         {
+            player.GetComponent<InteractionController>().PushAnim(true);
             //it is now being pushed
             interactTime = StopPushinginteractTime;
 
-
+            parentObject.GetComponent<Rigidbody>().useGravity = false;
             Sequence mySequence = DOTween.Sequence();
             Vector3 movPos = transform.position;
             movPos.y += .08f;
-
+            
             lookAtPos = parentObject.GetComponent<MeshRenderer>().bounds.center;
 
             mySequence.Insert(0, player.transform.DOMove(movPos, 1,false));
@@ -99,6 +108,8 @@ public class moveableObject : MonoBehaviour, IInteractable
         }
         else
         {
+            player.GetComponent<InteractionController>().PushAnim(false);
+            parentObject.GetComponent<Rigidbody>().useGravity = true; 
             player.GetComponent<CharController>().SetIsMovingObject(false);
             interactTime = StartPushInteractTime;
             //objectToMove.transform.parent = null;
@@ -110,7 +121,7 @@ public class moveableObject : MonoBehaviour, IInteractable
         return interactTime;
     }
 
-    Vector3 halfExtents = new Vector3(.5f, .9f,.5f);
+    Vector3 halfExtents = new Vector3(.49f, .9f, .49f);
     public bool CanBeInteractedWith()
     {
         //check if the interaction is being blocked
@@ -119,7 +130,6 @@ public class moveableObject : MonoBehaviour, IInteractable
 
         foreach(Collider collider in hits)
         {
-            Debug.Log(collider.name);
             if(collider.gameObject != parentObject)
             {
                 return false;

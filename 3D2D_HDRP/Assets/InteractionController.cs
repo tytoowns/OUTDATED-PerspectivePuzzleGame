@@ -127,6 +127,16 @@ public class InteractionController : MonoBehaviour
         interactFadetween.Kill();
         interactFadetween = DOTween.To(() => interactProgressCircle.fillAmount, xx => interactProgressCircle.fillAmount = xx, 1, .3f);
     }
+
+    public void PushAnim(bool startPushing)
+    {
+        if(startPushing)
+            armAnimator.SetTrigger("StartPush");
+        else
+            armAnimator.SetTrigger("EndPush");
+    }
+}
+
 /*
     private void CheckIfCanPush(GameObject objToPush, RaycastHit hit)
     {
@@ -218,4 +228,4 @@ public class InteractionController : MonoBehaviour
         }
     }
 */
-}
+
