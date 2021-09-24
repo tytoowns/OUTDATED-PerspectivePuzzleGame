@@ -81,7 +81,7 @@ public class DecalController : MonoBehaviour
     void Update()
     {
         #region playerInput
-        if (charController.GetIsGrounded()) // if you are grounded
+        if (charController.GetIsGrounded() && !charController.GetIsMovingObject()) // if you are grounded
         {
             if (Input.GetMouseButtonDown(0) && characterController.enabled) // and press down the left moust button
             {

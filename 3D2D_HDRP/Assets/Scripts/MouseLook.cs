@@ -5,10 +5,12 @@ using UnityEngine;
 public class MouseLook : MonoBehaviour
 {
     [SerializeField] private CharacterController controller;
+    [SerializeField] private CharController controllerScript;
     [SerializeField] private float MouseSensitivity = 100f;
     [SerializeField] private Transform Playerbody;
     float xRotation = 0f;
-
+    float mouseX;
+    float mouseY;
     // Start is called before the first frame update
     void Start()
     {
@@ -20,9 +22,16 @@ public class MouseLook : MonoBehaviour
     {
         if(controller.enabled) //if you can move / look around
         {
-            float mouseX = Input.GetAxis("Mouse X") * MouseSensitivity * Time.deltaTime;
-            float mouseY = Input.GetAxis("Mouse Y") * MouseSensitivity * Time.deltaTime;
-
+            if (!controllerScript.GetIsMovingObject())
+            {
+                mouseY = Input.GetAxis("Mouse Y") * MouseSensitivity * Time.deltaTime;
+                mouseX = Input.GetAxis("Mouse X") * MouseSensitivity * Time.deltaTime;
+            }
+            else
+            {
+                mouseY = 0;
+                mouseX = 0;
+            }
             xRotation -= mouseY;
             xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 

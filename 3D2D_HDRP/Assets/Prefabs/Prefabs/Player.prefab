@@ -1475,6 +1475,7 @@ GameObject:
   - component: {fileID: 5752328695109769971}
   - component: {fileID: 5752328695109769970}
   - component: {fileID: 5752328695109769973}
+  - component: {fileID: 6615481165402369845}
   m_Layer: 10
   m_Name: Player
   m_TagString: Untagged
@@ -1557,7 +1558,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   groundDistance: 0.4
-  interactDistance: 1.5
 --- !u!143 &5752328695109769971
 CharacterController:
   m_ObjectHideFlags: 0
@@ -1625,6 +1625,27 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &6615481165402369845
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5752328695109769972}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1607b884d7432454c84f70a915b0acd6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  InteractIgnoreLayers:
+    serializedVersion: 2
+    m_Bits: 1572
+  interactDistance: 0.5
+  armAnimator: {fileID: 6724523356933942993}
+  charController: {fileID: 5752328695109769968}
+  controller: {fileID: 5752328695109769971}
+  interactProgressCircle: {fileID: 0}
+  interactText: {fileID: 0}
 --- !u!1 &5752328695494665279
 GameObject:
   m_ObjectHideFlags: 0
@@ -1831,6 +1852,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   controller: {fileID: 5752328695109769971}
+  controllerScript: {fileID: 0}
   MouseSensitivity: 100
   Playerbody: {fileID: 5752328695109769982}
 --- !u!114 &5752328695494665276
