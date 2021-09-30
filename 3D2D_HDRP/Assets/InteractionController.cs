@@ -91,15 +91,12 @@ public class InteractionController : MonoBehaviour
                                 hit.collider.GetComponent<IInteractable>().Interact();
                                 alreadyInteracted = true;
                             }
-
                         }
                     }
-
                 }
             }
             else
             {
-                Debug.Log("hiding here 1");////////////////////////////
                 HideInteractUI();
             }
         }

@@ -14,6 +14,11 @@ public class moveableObject : MonoBehaviour, IInteractable
     [SerializeField] private LayerMask ignoreWhenCheckingIfBlocked;
     private float interactTime;
     private GameObject parentObject;
+    Vector3 halfExtents;
+    [SerializeField] private float pushSpeed = 1.35f;
+
+    //lock the x or z axis depending on movement
+
 
     // Start is called before the first frame update
     void Start()
@@ -21,6 +26,8 @@ public class moveableObject : MonoBehaviour, IInteractable
         parentObject = objectToMove;
         m_started = true;
         interactTime = StartPushInteractTime;
+        halfExtents = new Vector3(.49f, .99f, .49f);//(objectToMove.transform.localScale.x / 2) - 0.1f, (objectToMove.transform.localScale.y / 2) - 0.1f, (objectToMove.transform.localScale.z / 2) - 0.1f);
+
     }
 
     // Update is called once per frame
@@ -31,20 +38,18 @@ public class moveableObject : MonoBehaviour, IInteractable
 
     void FixedUpdate()
     {
-        if (isBeingMoved)
+        if (isBeingMoved)//they way i move the moveable object needs to be changed (wont work on a slope) and isnt very good atm
         {
             if(player.GetComponent<CharacterController>().enabled == true)
             {
-                parentObject.GetComponent<Rigidbody>().velocity = (player.transform.forward * Input.GetAxisRaw("Vertical")).normalized * 1.25f;
+                parentObject.GetComponent<Rigidbody>().velocity = (player.transform.forward * Input.GetAxisRaw("Vertical")).normalized * pushSpeed;
             }
-            //parentobject.getcomponent<rigidbody>().velocity = player.GetComponent<CharController>().GetVel();
-            //parentObject.GetComponent<Rigidbody>().AddForce(player.GetComponent<CharController>().GetVel(), ForceMode.VelocityChange);
         }
         else
         {
-            if(parentObject.GetComponent<Rigidbody>().useGravity == true)//make shift bool to check if other sides are being moved
+            if(parentObject.GetComponent<Rigidbody>().useGravity == false)//make shift bool to check if other sides are being moved
             {
-                parentObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
+                parentObject.GetComponent<Rigidbody>().velocity = Vector3.zero;//dont let it be moved when the player isnt moving it
 
             }
         }
@@ -54,36 +59,48 @@ public class moveableObject : MonoBehaviour, IInteractable
     need to lock Y so player cant jump
          lock x or z so player can only push and pull
 
-        lock cam
-        dont let player move left/right
+
+
         dont let them jump
         start/end push animation
 
          */
     Vector3 lookAtPos;
-
+    public float moveToPushSpeed = 1.1f;
     public void Interact()
     {
-        Debug.Log("interact..... NOW");
         isBeingMoved = !isBeingMoved;
         if (isBeingMoved)
         {
-            player.GetComponent<InteractionController>().PushAnim(true);
             //it is now being pushed
+            player.GetComponent<InteractionController>().PushAnim(true);
+            
             interactTime = StopPushinginteractTime;
 
-            parentObject.GetComponent<Rigidbody>().useGravity = false;
+            parentObject.GetComponent<Rigidbody>().useGravity = true;
             Sequence mySequence = DOTween.Sequence();
             Vector3 movPos = transform.position;
             movPos.y += .08f;
             
             lookAtPos = parentObject.GetComponent<MeshRenderer>().bounds.center;
+            float moveDuration = 0;
+            float movedis = Vector3.Distance(player.transform.position, movPos);
+            if (movedis > 0.25f)
+                moveDuration = movedis / moveToPushSpeed;
+            else
+                moveDuration = 0.1f;
 
-            mySequence.Insert(0, player.transform.DOMove(movPos, 1,false));
-            mySequence.Insert(1, player.transform.DOLookAt(lookAtPos, 1,AxisConstraint.Y));
+            //Debug.Log(moveDuration);
+            mySequence.Insert(0, player.transform.DOMove(movPos, moveDuration, false)); //time needs to depend on how close you are. so if you are in position, you dont have to wait
+            mySequence.Insert(1, player.transform.DOLookAt(lookAtPos, 1,AxisConstraint.Y));//depends how far away player is looking
             //if you change   ^ to 0 the rotation doesnt work. why?
             //maybe because it uses players current pos not the pos to where they will moved to
             //when doing the calcs for rotation
+
+            mySequence.Insert(1, Camera.main.transform.DOLocalRotate(Vector3.zero, 1));//same as above
+            Camera.main.GetComponent<MouseLook>().ResetXRotation();
+            
+            
 
             mySequence.AppendCallback(EnableCharCont);
 
@@ -109,7 +126,7 @@ public class moveableObject : MonoBehaviour, IInteractable
         else
         {
             player.GetComponent<InteractionController>().PushAnim(false);
-            parentObject.GetComponent<Rigidbody>().useGravity = true; 
+            parentObject.GetComponent<Rigidbody>().useGravity = false; 
             player.GetComponent<CharController>().SetIsMovingObject(false);
             interactTime = StartPushInteractTime;
             //objectToMove.transform.parent = null;
@@ -121,11 +138,9 @@ public class moveableObject : MonoBehaviour, IInteractable
         return interactTime;
     }
 
-    Vector3 halfExtents = new Vector3(.49f, .9f, .49f);
     public bool CanBeInteractedWith()
     {
-        //check if the interaction is being blocked
-
+        //check if the interaction is being blocked (for example, no room for player)
         Collider[] hits = Physics.OverlapBox(transform.position, halfExtents, Quaternion.identity, ~ignoreWhenCheckingIfBlocked);
 
         foreach(Collider collider in hits)
@@ -146,8 +161,7 @@ public class moveableObject : MonoBehaviour, IInteractable
         Gizmos.DrawWireCube(lookAtPos, new Vector3(.2f, .2f, .2f));
 
         Gizmos.color = Color.red;
-        //Check that it is being run in Play Mode, so it doesn't try to draw this in Editor mode
-            //Draw a cube where the OverlapBox is (positioned where your GameObject is as well as a size)
+            //Draw a cube where the OverlapBox is
             if(m_started)
                 Gizmos.DrawWireCube(transform.position, halfExtents * 2);
                 

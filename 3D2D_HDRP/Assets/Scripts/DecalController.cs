@@ -246,6 +246,8 @@ public class DecalController : MonoBehaviour
         Physics.Raycast(rightTop, CamForward, out hits[2], Mathf.Infinity, ~IgnoreMe);
         Physics.Raycast(rightBot, CamForward, out hits[3], Mathf.Infinity, ~IgnoreMe);
 
+
+
         #region IsDecalFullyOnObject debugRays
         /*
         Debug.DrawRay(leftTop, CamForward * hits[0].distance, Color.magenta, 2);//top left
@@ -299,11 +301,31 @@ public class DecalController : MonoBehaviour
     //checks if a point is OOB
     private bool CheckPointOutOfBounds(Vector3 raycastStartPoint)
     {
+        
         Vector3 DecalParentForward = decalParent.transform.TransformDirection(Vector3.forward);
-        //Debug.DrawRay(raycastStartPoint, DecalParentForward * 10, Color.red, 2);
+        //Debug.DrawRay(raycastStartPoint, DecalParentForward * 10, Color.red, 2,true);
         bool hasRaycastHit;
         hasRaycastHit = Physics.Raycast(raycastStartPoint, DecalParentForward, out RaycastHit hit, Mathf.Infinity, ~IgnoreMe);
-        return !hasRaycastHit || !hit.transform.CompareTag("Start") && !hit.transform.CompareTag("2Dable") && !hit.transform.CompareTag("2DableMoving");//check if its OOB. 
+        
+        if(hit.collider.tag != null)
+            //Debug.Log("decal projector OOB check tag = " + hit.collider.tag, this);
+      
+        if (!hit.collider.CompareTag("2Dable"))
+        {
+            Debug.DrawRay(raycastStartPoint, DecalParentForward * 10, Color.red, 2, true);
+            Debug.Log("wrong tag = " + hit.collider.gameObject.name + "  -  tag = " + hit.collider.gameObject.tag);
+        }
+        else if (hit.collider.CompareTag("2Dable") || hit.collider.CompareTag("Start"))
+        {
+            //Debug.DrawRay(raycastStartPoint, DecalParentForward * 10, Color.green, 2, true);
+            //Debug.Log("2Dable = " + hit.collider.gameObject.name);
+        }
+        
+
+        
+
+        //use hit. "collider" instead of transform. as transform will compare tag of parent object, not object hit directly.
+        return !hasRaycastHit || !hit.collider.CompareTag("Start") && !hit.collider.CompareTag("2Dable") && !hit.collider.CompareTag("2DableMoving");//check if its OOB. 
     }
 
     private Vector3 pos123;
